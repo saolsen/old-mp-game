@@ -1,2 +1,5 @@
-install: ./install_dependencies.sh
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev
+install: true
 script: make client && make server
