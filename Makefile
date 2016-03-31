@@ -18,7 +18,7 @@ client:
 	-rpath @executable_path/../Frameworks \
 	src/game_client.c -o ./build/client/osx/Game.app/Contents/MacOS/Game
 # Copy in files.
-	cp ./etc/Info.plist ./build/osx/Game.app/Contents/
+	cp ./etc/Info.plist ./build/client/osx/Game.app/Contents/
 	cp -r ./lib/SDL2.framework ./build/client/osx/Game.app/Contents/Frameworks/
 	cp -r ./lib/SDL2_net.framework ./build/client/osx/Game.app/Contents/Frameworks/
 

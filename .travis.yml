@@ -2,9 +2,10 @@ language: c
 
 matrix:
   include:
-    - os: osx
     - os: linux
       dist: trusty
+      sudo: required
+    - os: osx
 
 compiler: clang
 before_install:
