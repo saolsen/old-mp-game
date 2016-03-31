@@ -1,4 +1,4 @@
-CFLAGS = -g -O2 -Wall -std=c99
+CFLAGS = -g -O2 -Wall -std=c11
 
 all: client
 
@@ -24,11 +24,11 @@ client:
 
 server:
 # Make directory.
-	mkdir -p ./build/server
+	mkdir -p ./build/server/osx
 # Build exe
 	clang ${CFLAGS} \
 	-F lib -framework SDL2 -framework SDL2_net \
-	src/game_server.c -o ./build/server/GameServer
+	src/game_server.c -o ./build/server/osx/GameServer
 
 else
 # Linux
@@ -36,26 +36,24 @@ PLATFORM := "linux"
 
 client:
 # Make directory.
-	mkdir -p ./build/linux
+	mkdir -p ./build/client/linux
 # Build exe
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
-	src/game_client.c -o ./build/linux/Game \
+	src/game_client.c -o ./build/client/linux/Game \
 	`sdl2-config --libs`
 
 server:
 # Make directory.
-	mkdir -p ./build/server
+	mkdir -p ./build/server/linux
 # Build exe
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
-	src/game_server.c -o ./build/server/GameServer \
+	src/game_server.c -o ./build/server/linux/GameServer \
 	`sdl2-config --libs`
 
 endif
 
-# Get this working well
-# Then hook up travis
-# Can make a website in here too, makes it easy to deploy it to the same box.
-# Don't know if or how to lock it down yet, don't care.
-
+# The site is hosted with Caddy. Right now it's hella simple.
+site:
+	cp ./version.txt ./web/version.txt

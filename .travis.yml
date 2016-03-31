@@ -1,5 +1,8 @@
 language: c
 
+# We build this on linux and osx.
+# OSX client is built on osx.
+# Linux client, linux server, the website (and eventuially the windows client) are built on linux.
 matrix:
   include:
     - os: linux
@@ -9,9 +12,19 @@ matrix:
       cache: apt
     - os: osx
 
+# Need the ubuntu sdl libraries for linux. I think they are a runtime requirement right now too.
 before_install:
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq  ; fi
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev  ; fi
 
 install: true
-script: make client && make server
+script: make client && make server && make site
+
+# Package up the built assets for publishing.
+before_deploy:
+  # On linux we package up the client and the site.
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -zcvf game-$(cat version.txt).tar.gz ./build/client/linux; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -zcvf game-server-$(cat version.txt).tar.gz ./build/server/linux; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -zcvf game-site-$(cat version.txt).tar.gz ./web; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then zip -r -X ./game-$(cat version.txt).zip ./build/client/osx; fi
+

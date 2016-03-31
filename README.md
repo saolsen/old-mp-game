@@ -20,7 +20,7 @@ On osx everything needed is packaged in this repo.
 ### Windows
 Still tbd, no windows support yet.
 
-## Local Development
+## Local Game Development
 * Build client. `make client`
 * Build server. `make server`
 
@@ -37,3 +37,29 @@ This is tbd too but some stuff we probably want.
 * Some deployment stuff to deploy the server to digitalocean.
 
 There's gonna be another script too called `setup_server_host.sh` that is a script you can run on a freshly provisioned digitalocean ubuntu vm that sets up any of the dependencies you need to run the server. This is mostly gonna just be like the upstart stuff and a caddyfile. Then travis can push the build artifacts to the server and restart it (a couple of scp/ssh commands) I'll need to make sure creds and everything line up everywhere.
+
+I want to make sure I can easily set up digitalocean and get travis to deploy to it.
+I want travis to copy the app bundles and the server, then restart caddy and the server.
+I think I just have to set up a user, set up ssh for that user, then just ssh in from travis, gotta just give it the private key.
+
+Set up some s3 creds on the box so we can pull and push to s3. travis pushes builds there and we pull them. then just a script to log into a box, pull the latest release and restart everything.
+
+If I could get travis to create a github release if it's a tag and then push the assets there that would be pretty dope.
+
+Make a few thing things to upload to releases.
+for osx
+- upload a zip file of the osx client
+for linux
+- upload a tar.gz file of the linux client
+- upload a tar.gz file of the server
+- upload a tar.gz file of the website
+- TODO: upload the windows client
+
+Then my deploy script can simply log into the box, pull the release down, unpack it to the right spots and restart stuff. Easy.
+
+## Site
+The site is hosted with Caddy and built using hugo. To develop locally you probably want both of those installed.
+
+For the site this is what I want.
+A nice front page. Says some stuff about the game and the current version.
+Download links to the clients.
