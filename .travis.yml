@@ -19,10 +19,10 @@ install: true
 script: make client && make server && make site
 
 before_deploy:
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/client && tar -zcvf game-linux-$(cat version.txt).tar.gz linux && cd ../..; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/server && tar -zcvf game-server-$(cat version.txt).tar.gz linux && cd ../..; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/client && tar -zcvf game-linux-$(cat ../../version.txt).tar.gz linux && cd ../..; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/server && tar -zcvf game-server-$(cat ../../version.txt).tar.gz linux && cd ../..; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -zcvf game-site-$(cat version.txt).tar.gz web; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cd ./build/client && zip -r -X ./game-osx-$(cat version.txt).zip osx && cd ../..; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cd ./build/client && zip -r -X ./game-osx-$(cat ../../version.txt).zip osx && cd ../..; fi
 
 # Put a copy in github.
 deploy:
