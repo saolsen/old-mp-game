@@ -6,6 +6,7 @@ matrix:
       dist: trusty
       compiler: clang
       sudo: required
+      cache: apt
     - os: osx
 
 before_install:
