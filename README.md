@@ -63,3 +63,11 @@ The site is hosted with Caddy and built using hugo. To develop locally you proba
 For the site this is what I want.
 A nice front page. Says some stuff about the game and the current version.
 Download links to the clients.
+
+Maybe this is a better way to do it.
+- have it set up a user,
+- give that user permission to restart those two service,
+- have travis scp the files over and restart the services?
+
+means the osx one will show up a little later, I guess that's ok... nah, I don't like it.
+EH, lets try it. we do know right now that osx runs after linux, that's sorta useful.

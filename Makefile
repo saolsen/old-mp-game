@@ -28,7 +28,7 @@ server:
 # Build exe
 	clang ${CFLAGS} \
 	-F lib -framework SDL2 -framework SDL2_net \
-	src/game_server.c -o ./build/server/osx/GameServer
+	src/game_server.c -o ./build/server/osx/game_server
 
 else
 # Linux
@@ -49,7 +49,7 @@ server:
 # Build exe
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
-	src/game_server.c -o ./build/server/linux/GameServer \
+	src/game_server.c -o ./build/server/linux/game_server \
 	`sdl2-config --libs`
 
 endif

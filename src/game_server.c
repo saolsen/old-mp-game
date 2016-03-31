@@ -1,4 +1,5 @@
-#include "game.h"
+#define GAME_SERVER
+#include "game_platform.h"
 
 int main()
 {
