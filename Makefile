@@ -43,6 +43,15 @@ client:
 	src/game_client.c -o ./build/linux/Game \
 	`sdl2-config --libs`
 
+server:
+# Make directory.
+	mkdir -p ./build/server
+# Build exe
+	clang ${CFLAGS} \
+	`sdl2-config --cflags` \
+	src/game_server.c -o ./build/server/GameServer \
+	`sdl2-config --libs`
+
 endif
 
 # Get this working well
