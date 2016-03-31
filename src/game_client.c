@@ -1,5 +1,4 @@
-#include <SDL2/SDL.h>
-#include <SDL2_net/SDL_net.h>
+#include "game.h"
 
 int main()
 {

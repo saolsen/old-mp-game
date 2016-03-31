@@ -2,8 +2,9 @@ language: c
 
 matrix:
   include:
-    - dist: trusty
     - os: osx
+    - os: linux
+      dist: trusty
 
 compiler: clang
 before_install:
