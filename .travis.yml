@@ -1,5 +1,4 @@
-dist:
-    - trusty
+dist: trusty
 language: c
 compiler: clang
 before_install:
