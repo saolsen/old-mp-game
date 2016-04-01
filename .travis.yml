@@ -9,21 +9,15 @@ matrix:
   - os: osx
     compiler: clang
 before_install:
-- openssl aes-256-cbc -K $encrypted_4867891545ea_key -iv $encrypted_4867891545ea_iv -in game_rsa.enc -out game_rsa -d
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq  ; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential
-  libsdl2-dev libsdl2-net-dev; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev; fi
 install: true
 script: make client && make server && make site
 before_deploy:
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/client && tar -zcvf game-linux-$(cat
-  ../../version.txt).tar.gz linux && cd ../..; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/server && tar -zcvf game-server-$(cat
-  ../../version.txt).tar.gz linux && cd ../..; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -zcvf game-site-$(cat version.txt).tar.gz
-  web; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cd ./build/client && zip -r -X ./game-osx-$(cat
-  ../../version.txt).zip osx && cd ../..; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/client && tar -zcvf game-linux-$(cat ../../version.txt).tar.gz linux && cd ../..; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/server && tar -zcvf game-server-$(cat ../../version.txt).tar.gz linux && cd ../..; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -zcvf game-site-$(cat version.txt).tar.gz web; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cd ./build/client && zip -r -X ./game-osx-$(cat ../../version.txt).zip osx && cd ../..; fi
 deploy:
 - provider: releases
   api_key:
@@ -46,8 +40,3 @@ deploy:
     tags: true
     repo: saolsen/game
     condition: $TRAVIS_OS_NAME == osx
-- provider: script
-  script: scripts/deploy_server.sh
-  on:
-    tags: true
-    repo: saolsen/game
