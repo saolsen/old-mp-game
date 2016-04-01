@@ -10,7 +10,7 @@ matrix:
     compiler: clang
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq  ; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev libglew-dev; fi
 install: true
 script: make client SERVER_HOST=PROD_HOST && make server SERVER_HOST=PROD_HOST && make site
 before_deploy:
