@@ -1,9 +1,12 @@
 #define GAME_CLIENT
 #include "game_platform.h"
 
+char* PROD_HOST = "game.steveindusteves.com";
+char* DEV_HOST = "localhost";    
+
 // Set this in build system for prod builds to be the real server.
 #ifndef SERVER_HOST
-#define SERVER_HOST "localhost"
+#define SERVER_HOST DEV_HOST
 #endif
 
 int main()

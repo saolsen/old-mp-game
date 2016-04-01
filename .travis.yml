@@ -12,7 +12,7 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq  ; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev; fi
 install: true
-script: make client SERVER_HOST="game.steveindusteves.com" && make server SERVER_HOST="game.steveindusteves.com" && make site
+script: make client SERVER_HOST=PROD_HOST && make server SERVER_HOST=PROD_HOST && make site
 before_deploy:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/client && tar -zcvf game-linux-$(cat ../../version.txt).tar.gz linux && cd ../..; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd ./build/server && tar -zcvf game-server-$(cat ../../version.txt).tar.gz linux && cd ../..; fi

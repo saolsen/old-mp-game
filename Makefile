@@ -1,4 +1,4 @@
-SERVER_HOST = "localhost"
+SERVER_HOST = DEV_HOST
 
 CFLAGS = -g -O2 -Wall -std=c11 -DSERVER_HOST=${SERVER_HOST}
 
