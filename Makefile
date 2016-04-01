@@ -1,4 +1,6 @@
-CFLAGS = -g -O2 -Wall -std=c11
+SERVER_HOST = "localhost"
+
+CFLAGS = -g -O2 -Wall -std=c11 -DSERVER_HOST=${SERVER_HOST}
 
 all: client
 
