@@ -43,7 +43,7 @@ client:
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
 	src/game_client.c -o ./build/client/linux/Game \
-	`sdl2-config --libs` -lSDL2_net
+	`sdl2-config --libs` -lSDL2_net -lGL
 
 server:
 # Make directory.

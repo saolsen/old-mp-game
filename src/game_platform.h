@@ -35,7 +35,8 @@
 
 #ifdef __linux__
 
-// @TODO: How do I get the right opengl headers on linux.
+#define GL3_PROTOTYPES 1
+#include <GL/glew.h>
 
 #endif // linux client
 #endif // client

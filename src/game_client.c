@@ -96,6 +96,11 @@ int main()
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
 
+#ifdef __linux__
+    glewExperimental = GL_TRUE;
+    glewInit();
+#endif
+
     // Use Vsync
     if (SDL_GL_SetSwapInterval(1) < 0) {
         SDL_LogError("Unable to set VSync! SDL Error: %s\n", SDL_GetError());
