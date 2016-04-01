@@ -30,8 +30,8 @@ deploy:
     api_key:
       secure: FouxsgKutb/aObfMIHU4spLb976dtjcoPHCSgJ5jOV3eO8dCs/943fxZkXmBzt7/Zn1DLZ9suTMFvL0Ucmh/Z0Nmy5eBC/GS1vAQdLOVeX8NEEikznJbw5XkFbyrOCLNL4tXsk4tNndliGneWD3TUc/bTFf13/s89AEaB0OStTcddIfPaDrBxNudiqVSFH+Yyz8ZloWBvtsBumY1K558qaIXSDLTsDXUPYqRbO6XFLUeklw2+6XI7duVV92bjODIPDZb2LlAsdYS+e9xjhLjwBHNAPQMj3pQBwOP1HOEwnqGpQhPfobW7ywoXqGvJ52AvSHlcJ9N4rv/hsNH5oDUBnB0YLAmxHIUmmCifSu8+krQ784KPUroFQMfj3PuZzEC1aCBj886OxVdARBPl7S96Z7OZCZO0keEFXMuUjyimGcVxR1S8fXfcGrt3rQJTKmDNHZK5ghtuXx1UXseAaRZvFmd/zNsQ40nDGQ04OGgBdvNUR/hfBfWhbQ+fzdqnmugOCV5L97B23189HtmLAkIbCQmzCDcDzJvkvG1SV6n5jo4pmkZUeOFoYyki92kLE1rMb8ZvT9MED4hjVcX2aU5qLIJxpCjMPc+AcTZ7/tafeg6iK/G1tSeNrIetzDHeYyV2pvUR338R1Frc4JOm2Q71HTlCedS9AuYHvQn0s9B0IQ=
     file:
-      - ./buid/client/game-linux-$(cat version.txt).tar.gz
-      - ./build/server/game-server-$(cat version.txt).tar.gz
+      - buid/client/game-linux-$(cat version.txt).tar.gz
+      - build/server/game-server-$(cat version.txt).tar.gz
       - game-site-$(cat version.txt).tar.gz
     skip_cleanup: true
     on:
