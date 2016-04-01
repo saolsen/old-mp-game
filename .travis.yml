@@ -11,8 +11,7 @@ matrix:
 
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq  ; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential
-  libsdl2-dev libsdl2-net-dev  ; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev tree; fi
 
 install: true
 
