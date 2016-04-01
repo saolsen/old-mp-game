@@ -41,7 +41,7 @@ client:
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
 	src/game_client.c -o ./build/client/linux/Game \
-	`sdl2-config --libs`
+	`sdl2-config --libs` -lSDL2_net
 
 server:
 # Make directory.
@@ -50,7 +50,7 @@ server:
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
 	src/game_server.c -o ./build/server/linux/game_server \
-	`sdl2-config --libs`
+	`sdl2-config --libs` -lSDL2_net
 
 endif
 
