@@ -25,7 +25,7 @@ PLATFORM_LOG_MESSAGE(platformLogMessage)
 }
 
 int main()
-{
+{   
     PlatformAPI platform_api;
     platform_api.platformLogMessage = &platformLogMessage;
     
@@ -95,11 +95,6 @@ int main()
     }
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
-
-#ifdef __linux__
-    glewExperimental = GL_TRUE;
-    glewInit();
-#endif
 
     // Use Vsync
     if (SDL_GL_SetSwapInterval(1) < 0) {

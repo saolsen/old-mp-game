@@ -36,7 +36,7 @@
 #ifdef __linux__
 
 #define GL3_PROTOTYPES 1
-#include <GL/glew.h>
+#include <GL3/gl3.h>
 
 #endif // linux client
 #endif // client
