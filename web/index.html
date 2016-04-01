@@ -4,14 +4,20 @@
     <title>Game (pre)Alpha</title>
   </head>
   <body>
-    Welcome to the game. It is a very fun game.
+    <h1>
+      Game
+    </h1>
     <p>
-      This is a pre alpha so expect breaking changes (hopefully) every day.
-      For now when there is a new version you must download a new client, hopefully we will have a way to auto update the client before a real alpha program starts.
+      Welcome to the game. This is a pre alpha so breaking changes will come (hopefully) every day. When there's an update you must download the latest client. Hopefully by the time we get to an alpha the client will auto update.
+    </p> 
+    The latest game version is <code>{{.Include "/version.txt"}}</code>
+    <p>
+      <a href="/builds/game-osx-{{.Include "/version.txt"}}.zip">OSX Client</a>
+      <a href="/builds/game-linux-{{.Include "/version.txt"}}.tar.gz">Linux Client</a>
     </p>
-    The latest game version is {{.Include "/version.txt"}}
     <p>
-      There's finna be some download links here.
+      Note: The linux client currently requires you to install sdl2 and sdl2-net.<br>
+      In ubuntu that would be <code>sudo apt-get install libsdl2-dev libsdl2-net-dev</code>
     </p>
   </body>
 </html>
