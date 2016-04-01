@@ -39,7 +39,7 @@ mkdir -p /var/log/caddy
 
 cat > /etc/supervisor/conf.d/gameserver.conf <<- EOF
 [program:gameserver]
-command=/home/game/server/gameserver
+command=/home/game/server/game_server
 directory=/home/game/server
 autostart=false
 autorestart=true

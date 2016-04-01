@@ -57,3 +57,14 @@ endif
 # The site is hosted with Caddy. Right now it's hella simple.
 site:
 	cp ./version.txt ./web/version.txt
+
+# This you call against a brand new server that you want to use.
+setup_server:
+	ssh -A root@game.steveindusteves.com 'bash -s' < scripts/setup_server_host.sh
+
+# This you can't just call, first you gotta do some manuel work which is to make a directory
+# of your version. eg, 0.0.1 and then copy down all the build artifacts from github.
+deploy:
+	scp version.txt root@game.steveindusteves.com:/root/version.txt
+	scp -r `cat version.txt` root@game.steveindusteves.com:/root/`cat version.txt`
+	ssh -A root@game.steveindusteves.com 'bash -s' < scripts/update_server_host.sh
