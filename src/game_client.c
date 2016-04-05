@@ -15,7 +15,6 @@ char* DEV_HOST = "localhost";
 #endif
 
 // Set up platform API. Probably could be shared between client and server.
-//#define PLATFORM_LOG_MESSAGE(name) void name(char* format, ...)
 PLATFORM_LOG_MESSAGE(platformLogMessage)
 {
     va_list args;
@@ -29,21 +28,21 @@ int main()
     PlatformAPI platform_api;
     platform_api.platformLogMessage = &platformLogMessage;
     
-    SDL_Log("Hello World, This is the client!\n");
+    fprintf(stderr, "Hello World, This is the client!\n");
 
     if (SDL_Init(0) == -1) {
-        SDL_LogError("SDL_Init: %s\n", SDL_GetError());
+        fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
 
     if (SDLNet_Init() == -1) {
-        SDL_LogError("SDLNet_Init: %s\n", SDLNet_GetError());
+        fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
         exit(2);
     }
 
     UDPsocket udpsock = SDLNet_UDP_Open(0);
     if (!udpsock) {
-        SDL_LogError("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+        fprintf(stderr, "SDLNet_UDP_Open: %s\n", SDLNet_GetError());
         exit(2);
     }
 
@@ -53,7 +52,7 @@ int main()
     int len = strlen(data) + 1;
     UDPpacket *packet = SDLNet_AllocPacket(len);
     if (!packet) {
-        SDL_LogError("SDLNet_AllocPacket: %s\n", SDLNet_GetError());
+        fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
     }
 
     memcpy(packet->data, data, len);
@@ -69,9 +68,8 @@ int main()
 
     // Set up normal sdl stuff.
     if (SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError("Error initializing SDL: %s", SDL_GetError());
+        fprintf(stderr, "Error initializing SDL: %s", SDL_GetError());
     }
-
     
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
@@ -91,14 +89,20 @@ int main()
                                           SDL_WINDOW_ALLOW_HIGHDPI);
 
     if (!window) {
-        SDL_LogError("Error creating window: %s\n", SDL_GetError());
+        fprintf(stderr, "Error creating window: %s\n", SDL_GetError());
     }
 
     SDL_GLContext context = SDL_GL_CreateContext(window);
+    if (!context) {
+        fprintf(stderr, "Error creating opengl context: %s\n", SDL_GetError());
+    }
+
+    glewExperimental = GL_TRUE;
+    glewInit();
 
     // Use Vsync
     if (SDL_GL_SetSwapInterval(1) < 0) {
-        SDL_LogError("Unable to set VSync! SDL Error: %s\n", SDL_GetError());
+        fprintf(stderr, "Unable to set VSync! SDL Error: %s\n", SDL_GetError());
     }
 
     int running = 1;
@@ -114,7 +118,7 @@ int main()
             }
         }
 
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         GameMemory memory;
@@ -122,6 +126,5 @@ int main()
         gameUpdateAndRender(&memory);
 
         SDL_GL_SwapWindow(window);
-    }
-    
+    }   
 }

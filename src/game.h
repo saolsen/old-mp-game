@@ -1,5 +1,5 @@
-// Non platform stuff for everybody to use. Also defines the interface between the platform layer and
-// the game layer.
+// Non platform stuff for everybody to use. Also defines the interface between the platform layer
+// and the game layer.
 #ifndef _game_h
 #define _game_h
 
@@ -20,7 +20,8 @@ typedef float    r32;
 typedef double   r64;
 
 // Platform specific api.
-// I think I can do the define thing here to make it easy to then later make this function in the platform code.
+// I think I can do the define thing here to make it easy to then later make this function in the
+// platform code.
 #define PLATFORM_LOG_MESSAGE(name) void name(char* format, ...)
 typedef PLATFORM_LOG_MESSAGE(PlatformLogMessage);
 

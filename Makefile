@@ -18,7 +18,7 @@ client:
 	-framework OpenGL \
 	-F lib -framework SDL2 -framework SDL2_net \
 	-rpath @executable_path/../Frameworks \
-	src/game_client.c -o ./build/client/osx/Game.app/Contents/MacOS/Game
+	src/game_client.c -o ./build/client/osx/Game.app/Contents/MacOS/Game -lGLEW
 # Copy in files.
 	cp ./etc/Info.plist ./build/client/osx/Game.app/Contents/
 	cp -r ./lib/SDL2.framework ./build/client/osx/Game.app/Contents/Frameworks/
@@ -43,7 +43,7 @@ client:
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
 	src/game_client.c -o ./build/client/linux/Game \
-	`sdl2-config --libs` -lSDL2_net -lGL
+	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW
 
 server:
 # Make directory.
