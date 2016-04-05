@@ -46,9 +46,9 @@ client: nanovg
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
 	-I lib/nanovg/src \
-	-L build/lib -l nanovg \
+	-L build/lib \
 	src/game_client.c -o ./build/client/linux/Game \
-	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -lm
+	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -lm -lnanovg
 	cp -r ./data/* ./build/client/linux/
 
 server:
