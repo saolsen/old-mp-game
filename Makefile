@@ -64,7 +64,7 @@ endif
 
 nanovg:
 	mkdir -p ./build/lib/
-	cc -Wall -c lib/nanovg/src/nanovg.c -o build/lib/nanovg.o
+	clang -Wall -c lib/nanovg/src/nanovg.c -o build/lib/nanovg.o
 	ar -cvq build/lib/libnanovg.a build/lib/nanovg.o
 
 # The site is hosted with Caddy. Right now it's hella simple.
