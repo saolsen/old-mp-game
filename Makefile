@@ -47,7 +47,7 @@ client:
 	-I lib/nanovg/src \
 	lib/nanovg/src/nanovg.c \
 	src/game_client.c -o ./build/client/linux/Game \
-	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW
+	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -lm
 
 server:
 # Make directory.

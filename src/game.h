@@ -11,9 +11,6 @@
 #include <math.h>
 #include <string.h>
 
-// Shared libraries
-#include "nanovg.h"
-
 typedef int32_t  i32;
 typedef int64_t  i64;
 typedef uint8_t  u8;

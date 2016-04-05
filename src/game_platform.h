@@ -37,6 +37,7 @@
     #include <GL/glew.h>
 #endif // linux client
 
+#include "nanovg.h"
 #define NANOVG_GL3_IMPLEMENTATION
 #include "nanovg_gl.h"
 
