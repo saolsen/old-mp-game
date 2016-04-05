@@ -46,7 +46,8 @@ client:
 # Build exe
 	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
-	-L build/lib \
+	-I lib/imgui \
+	-I lib \
 	src/game_client.cpp -o ./build/client/linux/Game \
 	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW
 	cp -r ./data/* ./build/client/linux/
