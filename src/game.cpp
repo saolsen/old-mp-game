@@ -9,5 +9,5 @@ GAME_UPDATE_AND_RENDER(gameUpdateAndRender)
     }
 
     /* platform->platformLogMessage("Hello, logging"); */
-    INFO("Hello Logging");
+    /* INFO("Hello Logging"); */
 }

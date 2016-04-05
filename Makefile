@@ -1,6 +1,7 @@
 SERVER_HOST = DEV_HOST
 
-CFLAGS = -g -O2 -Wall -std=c11 -DSERVER_HOST=${SERVER_HOST}
+# CFLAGS = -g -O2 -Wall -std=c11 -DSERVER_HOST=${SERVER_HOST}
+CXXFLAGS = -g -O2 -Wall -std=c++11 -DSERVER_HOST=${SERVER_HOST}
 
 all: client
 
@@ -10,17 +11,17 @@ ifeq ($(OS),Darwin)
 # OSX
 PLATFORM := "osx"
 
-client: nanovg
+client:
 # Make bundle directory.
 	mkdir -p ./build/client/osx/Game.app/Contents/{MacOS,Resources,Frameworks}
 # Build exe
-	clang ${CFLAGS} \
+	clang++ ${CXXFLAGS} \
 	-framework OpenGL \
 	-F lib -framework SDL2 -framework SDL2_net \
 	-rpath @executable_path/../Frameworks \
-	-I lib/nanovg/src \
-	-L build/lib -l nanovg \
-	src/game_client.c -o ./build/client/osx/Game.app/Contents/MacOS/Game
+	-I lib/imgui \
+	-I lib \
+	src/game_client.cpp -o ./build/client/osx/Game.app/Contents/MacOS/Game
 # Copy in files.
 	cp ./etc/Info.plist ./build/client/osx/Game.app/Contents/
 	cp -r ./lib/SDL2.framework ./build/client/osx/Game.app/Contents/Frameworks/
@@ -31,41 +32,35 @@ server:
 # Make directory.
 	mkdir -p ./build/server/osx
 # Build exe
-	clang ${CFLAGS} \
+	clang++ ${CXXFLAGS} \
 	-F lib -framework SDL2 -framework SDL2_net \
-	src/game_server.c -o ./build/server/osx/game_server
+	src/game_server.cpp -o ./build/server/osx/game_server
 
 else
 # Linux
 PLATFORM := "linux"
 
-client: nanovg
+client:
 # Make directory.
 	mkdir -p ./build/client/linux
 # Build exe
-	clang ${CFLAGS} \
+	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
-	-I lib/nanovg/src \
 	-L build/lib \
-	src/game_client.c -o ./build/client/linux/Game \
-	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -lm -lnanovg
+	src/game_client.cpp -o ./build/client/linux/Game \
+	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW
 	cp -r ./data/* ./build/client/linux/
 
 server:
 # Make directory.
 	mkdir -p ./build/server/linux
 # Build exe
-	clang ${CFLAGS} \
+	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
-	src/game_server.c -o ./build/server/linux/game_server \
+	src/game_server.cpp -o ./build/server/linux/game_server \
 	`sdl2-config --libs` -lSDL2_net
 
 endif
-
-nanovg:
-	mkdir -p ./build/lib/
-	clang -Wall -c lib/nanovg/src/nanovg.c -o build/lib/nanovg.o
-	ar -cvq build/lib/libnanovg.a build/lib/nanovg.o
 
 # The site is hosted with Caddy. Right now it's hella simple.
 site:

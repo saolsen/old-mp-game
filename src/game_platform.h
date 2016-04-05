@@ -9,6 +9,7 @@
 
 // Everybody stuff
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 
 #ifdef _WIN32
 #endif
@@ -38,9 +39,13 @@
     #include <GL/glew.h>
 #endif // linux client
 
-#include "nanovg.h"
-#define NANOVG_GL3_IMPLEMENTATION
-#include "nanovg_gl.h"
+/* #include "nanovg.h" */
+/* #define NANOVG_GL3_IMPLEMENTATION */
+/* #include "nanovg_gl.h" */
+
+#include "imgui_draw.cpp"
+#include "imgui.cpp"
+#include "imgui_impl_sdl_gl3.cpp"
 
 #endif // client
 
