@@ -18,6 +18,8 @@ client:
 	-framework OpenGL \
 	-F lib -framework SDL2 -framework SDL2_net \
 	-rpath @executable_path/../Frameworks \
+	-I lib/nanovg/src \
+	lib/nanovg/src/nanovg.c \
 	src/game_client.c -o ./build/client/osx/Game.app/Contents/MacOS/Game
 # Copy in files.
 	cp ./etc/Info.plist ./build/client/osx/Game.app/Contents/
@@ -42,6 +44,8 @@ client:
 # Build exe
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
+	-I lib/nanovg/src \
+	lib/nanovg/src/nanovg.c \
 	src/game_client.c -o ./build/client/linux/Game \
 	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW
 

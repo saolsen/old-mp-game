@@ -5,6 +5,8 @@
 #ifndef _game_platform_h
 #define _game_platform_h
 
+#include "game.h"
+
 // Everybody stuff
 #include <SDL2/SDL.h>
 
@@ -20,13 +22,8 @@
 #include <SDL2/SDL_net.h>
 #endif // linux both
 
-
 // Client stuff
 #ifdef GAME_CLIENT
-
-// try to just use glew, need to figure out how to get that everywhere. I can statically link to it so I guess I just need to install it first.
-
-
 #ifdef _WIN32
 #endif
 
@@ -38,8 +35,11 @@
     #define GL_PROTOTYPES 1
     #define GLEW_STATIC
     #include <GL/glew.h>
-
 #endif // linux client
+
+#define NANOVG_GL3_IMPLEMENTATION
+#include "nanovg_gl.h"
+
 #endif // client
 
 // Server stuff

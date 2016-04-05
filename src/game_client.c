@@ -1,8 +1,6 @@
 #define GAME_CLIENT
 #include "game_platform.h"
 
-#include "game.h"
-
 // @TODO: Have a hot reloading version for debugging.
 #include "game.c"
 
@@ -107,6 +105,12 @@ int main()
         fprintf(stderr, "Unable to set VSync! SDL Error: %s\n", SDL_GetError());
     }
 
+    // Setup nvg
+    NVGcontext* vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+    if (vg == NULL) {
+        fprintf(stderr, "Could not init nanovg.\n");
+    }
+
     int running = 1;
     while (running) {
         SDL_Event event;
@@ -122,10 +126,18 @@ int main()
 
         glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        nvgBeginFrame(vg, 1024, 768, 1.0);
 
         GameMemory memory;
         memory.platform_api = &platform_api;
         gameUpdateAndRender(&memory);
+
+        nvgBeginPath(vg);
+        nvgRect(vg, 10, 10, 100, 100);
+        nvgFillColor(vg, nvgRGBf(1,0,0));
+        nvgFill(vg);
+
+        nvgEndFrame(vg);
 
         SDL_GL_SwapWindow(window);
     }   
