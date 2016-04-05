@@ -4,8 +4,8 @@
 // @TODO: Have a hot reloading version for debugging.
 #include "game.cpp"
 
-char* PROD_HOST = "game.steveindusteves.com";
-char* DEV_HOST = "localhost";
+const char* PROD_HOST = "game.steveindusteves.com";
+const char* DEV_HOST = "localhost";
 
 // Set this in build system for prod builds to be the real server.
 #ifndef SERVER_HOST
@@ -46,7 +46,7 @@ int main()
 
     // Ping the server.
     // I don't really like that you have to call this to allocate packets. I'd rather do the memory management myself. I had that system with an arena that was working very nicely. That way I don't have to resize.
-    char *data = "Hello I am the client";
+    const char *data = "Hello I am the client";
     int len = strlen(data) + 1;
     UDPpacket *packet = SDLNet_AllocPacket(len);
     if (!packet) {
@@ -69,6 +69,7 @@ int main()
         fprintf(stderr, "Error initializing SDL: %s", SDL_GetError());
     }
     
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
@@ -76,6 +77,7 @@ int main()
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_Window *window = SDL_CreateWindow("Game",
                                           SDL_WINDOWPOS_CENTERED,
@@ -106,6 +108,16 @@ int main()
         fprintf(stderr, "Unable to set VSync! SDL Error: %s\n", SDL_GetError());
     }
 
+    SDL_DisplayMode display_mode;
+    SDL_GetDisplayMode(0, 0, &display_mode);
+    fprintf(stderr, "Display Mode update hz: %i\n", display_mode.refresh_rate);
+
+    float game_update_hz = (float)display_mode.refresh_rate;
+    float target_seconds_per_frame = 1.0f / game_update_hz;
+
+    // setup imgui
+    ImGui_ImplSdlGL3_Init(window);
+
     // This is some real programming, will be a good first thing to get back in the right mindset.
     // want a rolling chat buffer, you can append messages and I'll be displaying messages too.
     // once it fills up, when new messages come it in should free up the oldest ones.
@@ -132,35 +144,46 @@ int main()
     for (int i=0; i<256; i++) {
         chat_input_buf[i] = 0;
     }
+
+    int update_time = 0;
+    int frame_time = 0;
+
+    uint64_t last_counter = SDL_GetPerformanceCounter();
+    int last_start_time = SDL_GetTicks();
  
     int running = 1;
     while (running) {
+        int start_time = SDL_GetTicks();
+        frame_time = start_time - last_start_time;
+        last_start_time = start_time;
+        
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            ImGui_ImplSdlGL3_ProcessEvent(&event);
             switch(event.type) {
 
-                // @TODO: Probably want to be able to move a carrot and actually edit this, not just backspace.
-            case SDL_TEXTINPUT: {
-                /* fprintf(stderr, "Text Input: %s\n", event.text.text); */
+            //     // @TODO: Probably want to be able to move a carrot and actually edit this, not just backspace.
+            // case SDL_TEXTINPUT: {
+            //     /* fprintf(stderr, "Text Input: %s\n", event.text.text); */
 
-                int input_len = strlen(event.text.text);
-                if (chat_input_buf_length + input_len < 255) {
-                    for (int i = 0; i < input_len; i++) {
-                        chat_input_buf[chat_input_buf_length + i] = event.text.text[i];
-                    }
-                    chat_input_buf_length += input_len;
-                }
+            //     int input_len = strlen(event.text.text);
+            //     if (chat_input_buf_length + input_len < 255) {
+            //         for (int i = 0; i < input_len; i++) {
+            //             chat_input_buf[chat_input_buf_length + i] = event.text.text[i];
+            //         }
+            //         chat_input_buf_length += input_len;
+            //     }
                 
-            } break;
+            // } break;
 
-            case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_BACKSPACE) {
-                    if (chat_input_buf_length > 0) {
-                        chat_input_buf[chat_input_buf_length-- - 1] = 0;
-                    }
-                }
+            // case SDL_KEYDOWN:
+            //     if (event.key.keysym.sym == SDLK_BACKSPACE) {
+            //         if (chat_input_buf_length > 0) {
+            //             chat_input_buf[chat_input_buf_length-- - 1] = 0;
+            //         }
+            //     }
 
-                break;
+            //     break;
                 
             case SDL_QUIT:
                 running = 0;
@@ -169,15 +192,37 @@ int main()
                 break;
             }
         }
-
+        
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         // @TODO: Handle high dpi and window resizing.
+
+        ImGui_ImplSdlGL3_NewFrame(window);
+
+        // test
+        ImGui::Begin("Welcome To The Game");
+        ImGui::Text("Performance %.3f ms/frame (%.1f FPS)",
+                        1000.0f / ImGui::GetIO().Framerate,
+                        ImGui::GetIO().Framerate);
+        ImGui::End();
 
         GameMemory memory;
         memory.platform_api = &platform_api;
         gameUpdateAndRender(&memory);
 
+        glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+        ImGui::Render();
+
+        // @TODO: Graph this and see how long we are actually sleeping and if it's accurate.
+        update_time = SDL_GetTicks() - start_time;
+        int time_till_vsync = target_seconds_per_frame*1000.0 - (SDL_GetTicks() - start_time);
+        if (time_till_vsync > 4) {
+            SDL_Delay(time_till_vsync - 3);
+        }
+
         SDL_GL_SwapWindow(window);
+
+        uint64_t end_counter = SDL_GetPerformanceCounter();
+        last_counter = end_counter;
     }
 }
