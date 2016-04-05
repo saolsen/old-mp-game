@@ -6,8 +6,7 @@
 
 int main()
 {
-    // @TODO: My own logging macros, I don't like these sdl ones.
-    SDL_Log("Hello World, This is the server!\n");
+    fprintf(stderr, "Hello, this is the server!\n");
 
     if (SDL_Init(0) == -1) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());

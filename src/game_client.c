@@ -95,6 +95,7 @@ int main()
         fprintf(stderr, "Error creating opengl context: %s\n", SDL_GetError());
     }
 
+    // @TODO: I think windows is going to need this too.
 #ifdef __linux__
     glewExperimental = GL_TRUE;
     glewInit();
@@ -111,6 +112,21 @@ int main()
         fprintf(stderr, "Could not init nanovg.\n");
     }
 
+    // Load font
+    char *base_path = NULL;
+    base_path = SDL_GetBasePath();
+    if (!base_path) {
+        base_path = SDL_strdup("./");
+    }
+
+    fprintf(stderr, "Resources will be loaded from %s\n", base_path);
+
+    char font_path[1024];
+    snprintf(font_path, sizeof(font_path), "%s%s", base_path, "SourceSansPro-Regular.ttf");
+    
+    int font = nvgCreateFont(vg, "main", font_path);
+    assert(font != -1);
+
     int running = 1;
     while (running) {
         SDL_Event event;
@@ -126,11 +142,18 @@ int main()
 
         glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        // @TODO: Handle high dpi and window resizing.
         nvgBeginFrame(vg, 1024, 768, 1.0);
 
         GameMemory memory;
         memory.platform_api = &platform_api;
         gameUpdateAndRender(&memory);
+
+        nvgBeginPath(vg);
+        nvgFontSize(vg, 24);
+        nvgText(vg, 500, 500, "Hello World", NULL);
+        nvgStrokeColor(vg, nvgRGBf(1,1,1));
+        nvgStroke(vg);
 
         nvgBeginPath(vg);
         nvgRect(vg, 10, 10, 100, 100);
@@ -140,5 +163,5 @@ int main()
         nvgEndFrame(vg);
 
         SDL_GL_SwapWindow(window);
-    }   
+    }
 }

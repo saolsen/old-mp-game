@@ -10,7 +10,7 @@ ifeq ($(OS),Darwin)
 # OSX
 PLATFORM := "osx"
 
-client:
+client: nanovg
 # Make bundle directory.
 	mkdir -p ./build/client/osx/Game.app/Contents/{MacOS,Resources,Frameworks}
 # Build exe
@@ -19,12 +19,13 @@ client:
 	-F lib -framework SDL2 -framework SDL2_net \
 	-rpath @executable_path/../Frameworks \
 	-I lib/nanovg/src \
-	lib/nanovg/src/nanovg.c \
+	-L build/lib -l nanovg \
 	src/game_client.c -o ./build/client/osx/Game.app/Contents/MacOS/Game
 # Copy in files.
 	cp ./etc/Info.plist ./build/client/osx/Game.app/Contents/
 	cp -r ./lib/SDL2.framework ./build/client/osx/Game.app/Contents/Frameworks/
 	cp -r ./lib/SDL2_net.framework ./build/client/osx/Game.app/Contents/Frameworks/
+	cp -r ./data/* ./build/client/osx/Game.app/Contents/Resources/
 
 server:
 # Make directory.
@@ -38,16 +39,17 @@ else
 # Linux
 PLATFORM := "linux"
 
-client:
+client: nanovg
 # Make directory.
 	mkdir -p ./build/client/linux
 # Build exe
 	clang ${CFLAGS} \
 	`sdl2-config --cflags` \
 	-I lib/nanovg/src \
-	lib/nanovg/src/nanovg.c \
+	-L build/lib -l nanovg \
 	src/game_client.c -o ./build/client/linux/Game \
 	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -lm
+	cp -r ./data/* ./build/client/linux/
 
 server:
 # Make directory.
@@ -59,6 +61,11 @@ server:
 	`sdl2-config --libs` -lSDL2_net
 
 endif
+
+nanovg:
+	mkdir -p ./build/lib/
+	cc -Wall -c lib/nanovg/src/nanovg.c -o build/lib/nanovg.o
+	ar -cvq build/lib/libnanovg.a build/lib/nanovg.o
 
 # The site is hosted with Caddy. Right now it's hella simple.
 site:
