@@ -97,8 +97,10 @@ int main()
         fprintf(stderr, "Error creating opengl context: %s\n", SDL_GetError());
     }
 
+#ifdef __linux__
     glewExperimental = GL_TRUE;
     glewInit();
+#endif
 
     // Use Vsync
     if (SDL_GL_SetSwapInterval(1) < 0) {
