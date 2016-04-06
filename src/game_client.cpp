@@ -206,6 +206,12 @@ int main()
                         ImGui::GetIO().Framerate);
         ImGui::End();
 
+        // Chat
+        ImGui::Begin("Chat");
+        ImGui::Text("Type Chat Messages Here!");
+        ImGui::InputText("", chat_input_buf, sizeof(chat_input_buf));
+        ImGui::End();
+
         GameMemory memory;
         memory.platform_api = &platform_api;
         gameUpdateAndRender(&memory);

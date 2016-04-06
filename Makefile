@@ -10,7 +10,7 @@ ifeq ($(OS),Darwin)
 # OSX
 PLATFORM := "osx"
 
-client:
+client: imgui
 # Make bundle directory.
 	mkdir -p ./build/client/osx/Game.app/Contents/{MacOS,Resources,Frameworks}
 # Build exe
@@ -20,6 +20,7 @@ client:
 	-rpath @executable_path/../Frameworks \
 	-I lib/imgui \
 	-I lib \
+	-L build/lib -limgui \
 	src/game_client.cpp -o ./build/client/osx/Game.app/Contents/MacOS/Game
 # Copy in files.
 	cp ./etc/Info.plist ./build/client/osx/Game.app/Contents/
@@ -39,7 +40,7 @@ else
 # Linux
 PLATFORM := "linux"
 
-client:
+client: imgui
 # Make directory.
 	mkdir -p ./build/client/linux
 # Build exe
@@ -47,8 +48,9 @@ client:
 	`sdl2-config --cflags` \
 	-I lib/imgui \
 	-I lib \
+	-L build/lib \
 	src/game_client.cpp -o ./build/client/linux/Game \
-	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW
+	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -limgui
 	cp -r ./data/* ./build/client/linux/
 
 server:
@@ -61,6 +63,11 @@ server:
 	`sdl2-config --libs` -lSDL2_net
 
 endif
+
+imgui:
+	mkdir -p ./build/lib
+	cd build/lib ; clang++ -c ../../lib/imgui/imgui_draw.cpp ../../lib/imgui/imgui.cpp
+	ar rcs build/lib/libimgui.a build/lib/imgui_draw.o build/lib/imgui.o
 
 # The site is hosted with Caddy. Right now it's hella simple.
 site:
