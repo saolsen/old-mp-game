@@ -36,13 +36,14 @@
 
 #ifdef __APPLE__
     #include <OpenGL/gl3.h>
-
+const char* library = "libgame.dylib";
 #endif // apple client
 
 #ifdef __linux__
     #define GL_PROTOTYPES 1
     #define GLEW_STATIC
     #include <GL/glew.h>
+const char* library = "libgame.so";
 #endif // linux client
 
 #include "imgui_impl_sdl_gl3.cpp"

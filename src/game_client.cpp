@@ -25,8 +25,8 @@ gameReload(CurrentGame* current_game)
 
     char path_buf[256];
     char *base_path = SDL_GetBasePath();
-    const char* library = "libgame.dylib";
     snprintf(path_buf, 256, "%s%s", base_path, library);
+    fprintf(stderr, "lib path: %s\n", path_buf);
 
     struct stat attr;
     if ((stat(path_buf, &attr) == 0) && (current_game->id != attr.st_ino)) {

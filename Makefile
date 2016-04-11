@@ -50,7 +50,7 @@ client: imgui
 	mkdir -p ./build/client/linux
 # Build dylib
 	clang++ ${CXXFLAGS} \
-	-dynamiclib -undefined dynamic_lookup \
+	-fPIC -shared \
 	-o ./build/client/linux/libgame.so \
 	src/game.cpp
 # Build exe
