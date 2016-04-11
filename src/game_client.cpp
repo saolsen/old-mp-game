@@ -4,6 +4,8 @@
 // @TODO: Have a hot reloading version for debugging.
 #include "game.cpp"
 
+#include "imgui_demo.cpp"
+
 const char* PROD_HOST = "game.steveindusteves.com";
 const char* DEV_HOST = "localhost";
 
@@ -21,8 +23,48 @@ PLATFORM_LOG_MESSAGE(platformLogMessage)
     va_end(args);
 }
 
+struct ChatMsg {
+    char* msg;
+    int   length;
+    // Add like the id of the person that sent the message too.
+};
+
+// Chat
+static char chat_text_buf[1024];
+static ChatMsg chat_msgs[512];
+int next_msg = 0;
+int next_txt_pos = 0;
+int num_msgs = 0;
+
+// @TODO: Since this is a circular thing I need to take the advice from gaffer on games on how
+// to wrap the pointer around. At first I think I'll just make this a linear buffer and then later
+// do that
+
+void add_chat_msg(const char* msg, int length)
+{
+    // @TODO: Make this a circular buffer.
+    assert(next_msg < sizeof(chat_msgs) / sizeof(chat_msgs[0]));
+    assert(next_txt_pos+length+1 < sizeof(chat_text_buf) / sizeof(chat_text_buf[0]));
+    ChatMsg *chat_msg = chat_msgs + next_msg++;
+    char* str_loc = chat_text_buf + next_txt_pos;
+
+    chat_msg->msg = str_loc;
+    chat_msg->length = length;
+
+    memcpy(str_loc, msg, length);
+    next_txt_pos += length;
+    chat_text_buf[next_txt_pos++] = 0;
+
+    num_msgs++;
+}
+
 int main()
-{   
+{
+    const char * msg1 = "Hello wudup with you";
+    add_chat_msg(msg1, strlen(msg1));
+    const char * msg2 = "This is the message bumba 2";
+    add_chat_msg(msg2, strlen(msg2));
+    
     PlatformAPI platform_api;
     platform_api.platformLogMessage = &platformLogMessage;
     
@@ -124,22 +166,11 @@ int main()
     
     // First pass at a chat buffer.
     // 4kb of text, @TODO: probably way small.
-    char *chat_buf = (char*)calloc(1, 1024*4);
-    char* chat_messages[256]; // Pointers to individual messages.
+    // char *chat_buf = (char*)calloc(1, 1024*4);
+    // char* chat_messages[256]; // Pointers to individual messages.
 
-    // add a message,
-    // write the string to the next space in chat_buf
-    // add pointer to chat_messages
-    // if there is not enough space in chat buf remove the oldest messages
-    // one at a time until there is enough free space.
-    // handle wrapping around the end of the buffer nicely, dont want a chat message to span around
-    // so we can just ignore the end of the buffer.
-
-    // there are about 10 thousand systems like this that I need to implement and get good at just doing
-    // a good first pass and iterating. This is the most important skill so I need to get good at it.
 
     char chat_input_buf[256];
-    int chat_input_buf_length = 0;
 
     for (int i=0; i<256; i++) {
         chat_input_buf[i] = 0;
@@ -161,29 +192,6 @@ int main()
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSdlGL3_ProcessEvent(&event);
             switch(event.type) {
-
-            //     // @TODO: Probably want to be able to move a carrot and actually edit this, not just backspace.
-            // case SDL_TEXTINPUT: {
-            //     /* fprintf(stderr, "Text Input: %s\n", event.text.text); */
-
-            //     int input_len = strlen(event.text.text);
-            //     if (chat_input_buf_length + input_len < 255) {
-            //         for (int i = 0; i < input_len; i++) {
-            //             chat_input_buf[chat_input_buf_length + i] = event.text.text[i];
-            //         }
-            //         chat_input_buf_length += input_len;
-            //     }
-                
-            // } break;
-
-            // case SDL_KEYDOWN:
-            //     if (event.key.keysym.sym == SDLK_BACKSPACE) {
-            //         if (chat_input_buf_length > 0) {
-            //             chat_input_buf[chat_input_buf_length-- - 1] = 0;
-            //         }
-            //     }
-
-            //     break;
                 
             case SDL_QUIT:
                 running = 0;
@@ -199,17 +207,76 @@ int main()
 
         ImGui_ImplSdlGL3_NewFrame(window);
 
-        // test
+        ImGui::ShowTestWindow();
+        // Look at the console example for doing a chat widget.
+        // Put chat in the lower left, no resize, no border no menu etc...
+
+        // Test
         ImGui::Begin("Welcome To The Game");
         ImGui::Text("Performance %.3f ms/frame (%.1f FPS)",
                         1000.0f / ImGui::GetIO().Framerate,
                         ImGui::GetIO().Framerate);
         ImGui::End();
 
+        // There's finna be 2 ui needs.
+        // First is ingame stuff, this I can still use imgui for if i'm careful.
+        // I need chat and connection stuff and like menu stuff (options) whatever.
+        // I should style this and position it absolutely and make it look good.
+
+        // The rest is dev tools/debug stuff. This is gonna be strait up imgui goodness like
+        // logs browsing and profiler output or and like maybe a dev console and tweaking things
+        // or debugging things. Possibly even like asset generation stuff and world generators.
+        // This should just work of a debug menu and be classig IMGUI widgets.
+
         // Chat
-        ImGui::Begin("Chat");
-        ImGui::Text("Type Chat Messages Here!");
-        ImGui::InputText("", chat_input_buf, sizeof(chat_input_buf));
+
+        // @TODO: This still sorta sux.
+        // Fix positioning to be relative to screen size.
+        // Fix scrolling. Maybe also have scroll bar on the left.
+        bool is_open = true;
+        ImGui::SetNextWindowPos(ImVec2(0,500), true);
+        ImGui::SetNextWindowSize(ImVec2(362,270), true);
+        ImGui::Begin("Chat", &is_open, ImGuiWindowFlags_NoCollapse |
+                     ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoTitleBar |
+                     ImGuiWindowFlags_NoResize);
+        // Make tall enough to see chat at the bottom.
+        // Always scroll buffer to the bottomr.
+
+        ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
+        // @TODO: There are better ways to do this.
+        for (int msg_index = 0; msg_index < num_msgs; msg_index++) {
+            ChatMsg *msg = chat_msgs + msg_index;
+            ImGui::Text(msg->msg);
+        }
+        ImGui::SetScrollHere(); // Probably not always...
+        ImGui::EndChild();
+        ImGui::Separator();
+        bool add_msg = false;
+        if(ImGui::InputText("", chat_input_buf, sizeof(chat_input_buf),
+                            ImGuiInputTextFlags_EnterReturnsTrue)) {
+            add_msg = true;
+        }
+
+        // Keep focused here on enter.
+        if (ImGui::IsItemHovered() ||
+            (ImGui::IsRootWindowOrAnyChildFocused() &&
+             !ImGui::IsAnyItemActive() &&
+             !ImGui::IsMouseClicked(0))) {
+            ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+        }
+        
+        ImGui::SameLine();
+        if (ImGui::Button("Send") || add_msg) {
+            // Send chat message.
+            // INFO("Sending: %s", chat_input_buf);
+            add_chat_msg(chat_input_buf, strlen(chat_input_buf));
+
+            // Clear input buffer.
+            for (int i=0; i<256; i++) {
+                chat_input_buf[i] = 0;
+            }
+        }
         ImGui::End();
 
         GameMemory memory;

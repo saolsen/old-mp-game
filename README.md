@@ -12,7 +12,7 @@ The server for now is just 1 executable that the clients all connect to. This is
 On linux you need to install a few packages.
 
 * `sudo apt-get update`
-* `sudo apt-get install build-essential libsdl2-dev libsdl2-net-dev -y`
+* `sudo apt-get install build-essential libsdl2-dev libsdl2-net-dev libglew-dev -y`
 
 ### OSX
 On osx everything needed is packaged in this repo.

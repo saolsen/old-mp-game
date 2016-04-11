@@ -83,3 +83,6 @@ deploy:
 	scp version.txt root@game.steveindusteves.com:/root/version.txt
 	scp -r `cat version.txt` root@game.steveindusteves.com:/root/`cat version.txt`
 	ssh -A root@game.steveindusteves.com 'bash -s' < scripts/update_server_host.sh
+
+tail_logs:
+	ssh -A root@game.steveindusteves.com 'tail -f /var/log/gameserver/gameserver.err.log'
