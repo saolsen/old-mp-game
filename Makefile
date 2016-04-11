@@ -13,6 +13,11 @@ PLATFORM := "osx"
 client: imgui
 # Make bundle directory.
 	mkdir -p ./build/client/osx/Game.app/Contents/{MacOS,Resources,Frameworks}
+# Build dylib
+	clang++ ${CXXFLAGS} \
+	-dynamiclib -undefined dynamic_lookup \
+	-o ./build/client/osx/Game.app/Contents/Resources/libgame.dylib \
+	src/game.cpp
 # Build exe
 	clang++ ${CXXFLAGS} \
 	-framework OpenGL \
@@ -56,6 +61,11 @@ client: imgui
 server:
 # Make directory.
 	mkdir -p ./build/server/linux
+# Build dylib
+	clang++ ${CXXFLAGS} \
+	-dynamiclib -undefined dynamic_lookup \
+	-o ./build/client/osx/Game.app/Contents/Resources/libgame.so \
+	src/game.cpp
 # Build exe
 	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \

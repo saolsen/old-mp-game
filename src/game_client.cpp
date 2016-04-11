@@ -1,9 +1,6 @@
 #define GAME_CLIENT
 #include "game_platform.h"
 
-// @TODO: Have a hot reloading version for debugging.
-#include "game.cpp"
-
 #include "imgui_demo.cpp"
 
 const char* PROD_HOST = "game.steveindusteves.com";
@@ -13,6 +10,58 @@ const char* DEV_HOST = "localhost";
 #ifndef SERVER_HOST
 #define SERVER_HOST DEV_HOST
 #endif
+
+// Dll reloading
+struct CurrentGame {
+    void *handle;
+    ino_t id;
+    GameUpdateAndRender *gameUpdateAndRender;
+};
+
+bool
+gameReload(CurrentGame* current_game)
+{
+    bool game_reloaded = false;
+
+    char path_buf[256];
+    char *base_path = SDL_GetBasePath();
+    const char* library = "libgame.dylib";
+    snprintf(path_buf, 256, "%s%s", base_path, library);
+
+    struct stat attr;
+    if ((stat(path_buf, &attr) == 0) && (current_game->id != attr.st_ino)) {
+        fprintf(stderr, "New library to load.\n");
+
+        if (current_game->handle) {
+            SDL_UnloadObject(current_game->handle);
+        }
+
+        void *handle = SDL_LoadObject(path_buf);
+
+        if (handle) {
+            current_game->handle = handle;
+            current_game->id = attr.st_ino;
+
+            GameUpdateAndRender *game_update_fn = (GameUpdateAndRender*)SDL_LoadFunction(handle, "gameUpdateAndRender");
+            if (game_update_fn != NULL) {
+                current_game->gameUpdateAndRender = *game_update_fn;
+                fprintf(stderr, "Reloaded Game Library\n");
+                game_reloaded = true;
+            } else {
+                fprintf(stderr, "Error loading gameUpdateAndRender function.\n");
+                SDL_UnloadObject(handle);
+                current_game->handle = NULL;
+                current_game->id = 0;
+            }
+        } else {
+            fprintf(stderr, "Error loading game dll\n");
+            current_game->handle = NULL;
+            current_game->id = 0;
+        }
+    }
+
+    return game_reloaded;
+}
 
 // Set up platform API. Probably could be shared between client and server.
 PLATFORM_LOG_MESSAGE(platformLogMessage)
@@ -60,6 +109,11 @@ void add_chat_msg(const char* msg, int length)
 
 int main()
 {
+    CurrentGame game = {.handle = NULL,
+                        .id = 0,
+                        .gameUpdateAndRender = NULL };
+    gameReload(&game);
+    
     const char * msg1 = "Hello wudup with you";
     add_chat_msg(msg1, strlen(msg1));
     const char * msg2 = "This is the message bumba 2";
@@ -160,16 +214,6 @@ int main()
     // setup imgui
     ImGui_ImplSdlGL3_Init(window);
 
-    // This is some real programming, will be a good first thing to get back in the right mindset.
-    // want a rolling chat buffer, you can append messages and I'll be displaying messages too.
-    // once it fills up, when new messages come it in should free up the oldest ones.
-    
-    // First pass at a chat buffer.
-    // 4kb of text, @TODO: probably way small.
-    // char *chat_buf = (char*)calloc(1, 1024*4);
-    // char* chat_messages[256]; // Pointers to individual messages.
-
-
     char chat_input_buf[256];
 
     for (int i=0; i<256; i++) {
@@ -187,6 +231,8 @@ int main()
         int start_time = SDL_GetTicks();
         frame_time = start_time - last_start_time;
         last_start_time = start_time;
+
+        gameReload(&game);
         
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -281,7 +327,7 @@ int main()
 
         GameMemory memory;
         memory.platform_api = &platform_api;
-        gameUpdateAndRender(&memory);
+        game.gameUpdateAndRender(&memory);
 
         glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
         ImGui::Render();

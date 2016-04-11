@@ -3,6 +3,10 @@
 #ifndef _game_h
 #define _game_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Only rely on c libraries. tbd how to render shit, prolly just gonna be platform apis.
 #include <stdbool.h>
 #include <stdint.h>
@@ -53,5 +57,8 @@ extern GameUpdateAndRender gameUpdateAndRender;
 // Helpers that use platform api, can only be called once platform is set.
 #define INFO(format, ...) platform->platformLogMessage("[INFO] (%s:%d) " format "\n", \
                                                        __FILE__, __LINE__, ##__VA_ARGS__)
-
+#ifdef __cplusplus
+}
+#endif
+    
 #endif

@@ -11,6 +11,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 
+// @TODO: Use sdl version of stat, not sure if there even is one tho, maybe this is just a dev
+// feature.
+#include <sys/stat.h>
+
 #ifdef _WIN32
 #endif
 
@@ -25,6 +29,8 @@
 
 // Client stuff
 #ifdef GAME_CLIENT
+#include <SDL2/SDL_loadso.h>
+
 #ifdef _WIN32
 #endif
 
