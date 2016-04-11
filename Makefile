@@ -48,6 +48,11 @@ PLATFORM := "linux"
 client: imgui
 # Make directory.
 	mkdir -p ./build/client/linux
+# Build dylib
+	clang++ ${CXXFLAGS} \
+	-dynamiclib -undefined dynamic_lookup \
+	-o ./build/client/linux/libgame.so \
+	src/game.cpp
 # Build exe
 	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
@@ -61,11 +66,6 @@ client: imgui
 server:
 # Make directory.
 	mkdir -p ./build/server/linux
-# Build dylib
-	clang++ ${CXXFLAGS} \
-	-dynamiclib -undefined dynamic_lookup \
-	-o ./build/client/osx/Game.app/Contents/Resources/libgame.so \
-	src/game.cpp
 # Build exe
 	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
