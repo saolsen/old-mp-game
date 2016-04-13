@@ -2,7 +2,7 @@
 // at least for the server.
 
 #define GAME_SERVER
-#include "game_platform.h"
+#include "game_system.h"
 
 int main()
 {

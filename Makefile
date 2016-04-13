@@ -15,6 +15,7 @@ client: imgui
 	mkdir -p ./build/client/osx/Game.app/Contents/{MacOS,Resources,Frameworks}
 # Build dylib
 	clang++ ${CXXFLAGS} \
+	-I lib/imgui \
 	-dynamiclib -undefined dynamic_lookup \
 	-o ./build/client/osx/Game.app/Contents/Resources/libgame.dylib \
 	src/game.cpp
@@ -50,6 +51,7 @@ client: imgui
 	mkdir -p ./build/client/linux
 # Build dylib
 	clang++ ${CXXFLAGS} \
+	-I lib/imgui \
 	-fPIC -shared \
 	-o ./build/client/linux/libgame.so \
 	src/game.cpp

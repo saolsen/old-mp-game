@@ -1,10 +1,14 @@
 #define GAME_CLIENT
-#include "game_platform.h"
+#include "game_system.h"
 
 #include "imgui_demo.cpp"
 
 const char* PROD_HOST = "game.steveindusteves.com";
 const char* DEV_HOST = "localhost";
+
+#define KILOBYTES(value) ((value)*1024LL)
+#define MEGABYTES(value) (KILOBYTES(value)*1024LL)
+#define GIGABYTES(value) (MEGABYTES(value)*1024LL)
 
 // Set this in build system for prod builds to be the real server.
 #ifndef SERVER_HOST
@@ -26,7 +30,6 @@ gameReload(CurrentGame* current_game)
     char path_buf[256];
     char *base_path = SDL_GetBasePath();
     snprintf(path_buf, 256, "%s%s", base_path, library);
-    fprintf(stderr, "lib path: %s\n", path_buf);
 
     struct stat attr;
     if ((stat(path_buf, &attr) == 0) && (current_game->id != attr.st_ino)) {
@@ -72,41 +75,6 @@ PLATFORM_LOG_MESSAGE(platformLogMessage)
     va_end(args);
 }
 
-struct ChatMsg {
-    char* msg;
-    int   length;
-    // Add like the id of the person that sent the message too.
-};
-
-// Chat
-static char chat_text_buf[1024];
-static ChatMsg chat_msgs[512];
-int next_msg = 0;
-int next_txt_pos = 0;
-int num_msgs = 0;
-
-// @TODO: Since this is a circular thing I need to take the advice from gaffer on games on how
-// to wrap the pointer around. At first I think I'll just make this a linear buffer and then later
-// do that
-
-void add_chat_msg(const char* msg, int length)
-{
-    // @TODO: Make this a circular buffer.
-    assert(next_msg < sizeof(chat_msgs) / sizeof(chat_msgs[0]));
-    assert(next_txt_pos+length+1 < sizeof(chat_text_buf) / sizeof(chat_text_buf[0]));
-    ChatMsg *chat_msg = chat_msgs + next_msg++;
-    char* str_loc = chat_text_buf + next_txt_pos;
-
-    chat_msg->msg = str_loc;
-    chat_msg->length = length;
-
-    memcpy(str_loc, msg, length);
-    next_txt_pos += length;
-    chat_text_buf[next_txt_pos++] = 0;
-
-    num_msgs++;
-}
-
 int main()
 {
     CurrentGame game = {.handle = NULL,
@@ -114,15 +82,13 @@ int main()
                         .gameUpdateAndRender = NULL };
     gameReload(&game);
     
-    const char * msg1 = "Hello wudup with you";
-    add_chat_msg(msg1, strlen(msg1));
-    const char * msg2 = "This is the message bumba 2";
-    add_chat_msg(msg2, strlen(msg2));
+    // const char * msg1 = "Hello wudup with you";
+    // add_chat_msg(msg1, strlen(msg1));
+    // const char * msg2 = "This is the message bumba 2";
+    // add_chat_msg(msg2, strlen(msg2));
     
     PlatformAPI platform_api;
     platform_api.platformLogMessage = &platformLogMessage;
-    
-    fprintf(stderr, "Hello World, This is the client!\n");
 
     if (SDL_Init(0) == -1) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
@@ -211,14 +177,28 @@ int main()
     float game_update_hz = (float)display_mode.refresh_rate;
     float target_seconds_per_frame = 1.0f / game_update_hz;
 
-    // setup imgui
+    // Setup imgui
     ImGui_ImplSdlGL3_Init(window);
 
-    char chat_input_buf[256];
+    // Setup game memory.
+    GameMemory *memory = (GameMemory*)calloc(1, sizeof(GameMemory));
+    // Having the arenas allocated by the platform because I think I want them to be
+    // resizable. Maybe that's dumb and I should just pass the memory and give a platform
+    // api function to allocate more.
+    MemoryArena *persistent_arena = (MemoryArena*)calloc(1, sizeof(MemoryArena));
+    MemoryArena *transient_arena = (MemoryArena*)calloc(1, sizeof(MemoryArena));
 
-    for (int i=0; i<256; i++) {
-        chat_input_buf[i] = 0;
-    }
+    memory->platform_api = &platform_api;
+    
+    memory->persistent_arena = persistent_arena;
+    memory->transient_arena = transient_arena;
+    const long persistent_arena_size = MEGABYTES(128);
+    arenaAllocate(memory->persistent_arena,
+                  (u8*)calloc(1, persistent_arena_size), // @TODO: No idea yet.
+                  persistent_arena_size);
+    arenaAllocate(memory->transient_arena,
+                  (u8*)calloc(1, persistent_arena_size), // @TODO: No idea yet.
+                  persistent_arena_size);
 
     int update_time = 0;
     int frame_time = 0;
@@ -246,7 +226,7 @@ int main()
                 break;
             }
         }
-        
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         // @TODO: Handle high dpi and window resizing.
@@ -273,61 +253,22 @@ int main()
         // logs browsing and profiler output or and like maybe a dev console and tweaking things
         // or debugging things. Possibly even like asset generation stuff and world generators.
         // This should just work of a debug menu and be classig IMGUI widgets.
+        memory->ticks = start_time; // @TODO; Not exactly sure what I want to pass here.
+        // start_time is the time the frame started at.
+        memory->dt = (float)(frame_time * 0.001f); // @TODO: this is the last frame's length,
+        // not this one.
 
-        // Chat
+        int w, h;
+        int display_w, display_h;
+        SDL_GetWindowSize(window, &w, &h);
+        SDL_GL_GetDrawableSize(window, &display_w, &display_h);
 
-        // @TODO: This still sorta sux.
-        // Fix positioning to be relative to screen size.
-        // Fix scrolling. Maybe also have scroll bar on the left.
-        bool is_open = true;
-        ImGui::SetNextWindowPos(ImVec2(0,500), true);
-        ImGui::SetNextWindowSize(ImVec2(362,270), true);
-        ImGui::Begin("Chat", &is_open, ImGuiWindowFlags_NoCollapse |
-                     ImGuiWindowFlags_NoMove |
-                     ImGuiWindowFlags_NoTitleBar |
-                     ImGuiWindowFlags_NoResize);
-        // Make tall enough to see chat at the bottom.
-        // Always scroll buffer to the bottomr.
+        memory->window_width = w;
+        memory->window_height = h;
+        memory->display_width = display_w;
+        memory->display_height = display_h;
 
-        ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
-        // @TODO: There are better ways to do this.
-        for (int msg_index = 0; msg_index < num_msgs; msg_index++) {
-            ChatMsg *msg = chat_msgs + msg_index;
-            ImGui::Text(msg->msg);
-        }
-        ImGui::SetScrollHere(); // Probably not always...
-        ImGui::EndChild();
-        ImGui::Separator();
-        bool add_msg = false;
-        if(ImGui::InputText("", chat_input_buf, sizeof(chat_input_buf),
-                            ImGuiInputTextFlags_EnterReturnsTrue)) {
-            add_msg = true;
-        }
-
-        // Keep focused here on enter.
-        if (ImGui::IsItemHovered() ||
-            (ImGui::IsRootWindowOrAnyChildFocused() &&
-             !ImGui::IsAnyItemActive() &&
-             !ImGui::IsMouseClicked(0))) {
-            ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
-        }
-        
-        ImGui::SameLine();
-        if (ImGui::Button("Send") || add_msg) {
-            // Send chat message.
-            // INFO("Sending: %s", chat_input_buf);
-            add_chat_msg(chat_input_buf, strlen(chat_input_buf));
-
-            // Clear input buffer.
-            for (int i=0; i<256; i++) {
-                chat_input_buf[i] = 0;
-            }
-        }
-        ImGui::End();
-
-        GameMemory memory;
-        memory.platform_api = &platform_api;
-        game.gameUpdateAndRender(&memory);
+        game.gameUpdateAndRender(memory);
 
         glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
         ImGui::Render();

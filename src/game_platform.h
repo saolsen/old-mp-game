@@ -1,68 +1,103 @@
-/*
-  Platform level includes, basically anything external to the game is included here and only used from the
-  game_client.c and game_server.c files.
- */
-#ifndef _game_platform_h
-#define _game_platform_h
+// Non platform stuff for everybody to use. Also defines the interface between the platform layer
+// and the game layer.
 
-#include "game.h"
 
-// Everybody stuff
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
+// I really wanna call this game_platform.h, can call that game_dependencies.h
+#ifndef _game_h
+#define _game_h
 
-// @TODO: Use sdl version of stat, not sure if there even is one tho, maybe this is just a dev
-// feature.
-#include <sys/stat.h>
-
-#ifdef _WIN32
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#ifdef __APPLE__
-#include <SDL2_net/SDL_net.h>
+// Only rely on c libraries. tbd how to render shit, prolly just gonna be platform apis.
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdarg.h>
+#include <assert.h>
+#include <math.h>
+#include <string.h>
 
-#endif // apple both
+typedef int32_t  i32;
+typedef int64_t  i64;
+typedef uint8_t  u8;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef float    r32;
+typedef double   r64;
 
-#ifdef __linux__
-#include <SDL2/SDL_net.h>
-#endif // linux both
+// Platform specific api.
+// I think I can do the define thing here to make it easy to then later make this function in the
+// platform code.
+#define PLATFORM_LOG_MESSAGE(name) void name(const char* format, ...)
+typedef PLATFORM_LOG_MESSAGE(PlatformLogMessage);
 
-// Client stuff
-#ifdef GAME_CLIENT
-#include <SDL2/SDL_loadso.h>
+typedef struct {
+    PlatformLogMessage *platformLogMessage;
+} PlatformAPI;
 
-#ifdef _WIN32
+typedef struct {
+    u8 *base;
+    i64 size;
+    i64 max_size;
+} MemoryArena;
+
+void
+arenaAllocate(MemoryArena* arena, u8* memory, i64 size)
+{
+    arena->base = memory;
+    arena->size = 0;
+    arena->max_size = size;
+}
+
+#include <stdio.h>
+    
+u8*
+arenaPushSize(MemoryArena *arena, i64 size)
+{
+    printf("ArenaPushing: %lli, ", size);
+    assert(arena->size + size < arena->max_size);
+
+    u8 *result = arena->base + arena->size; // @TODO: Align
+    arena->size += size;
+
+    printf("ArenaSpaceRemaining: %lli\n", arena->max_size - arena->size);
+    
+    return result;
+}
+
+#define arenaPushType(arena, type) (type*)arenaPushSize(arena, sizeof(type))
+#define arenaPushArray(arena, type, n) (type*)arenaPushSize(arena, sizeof(type)*n);
+
+typedef struct {
+    PlatformAPI *platform_api;
+
+    MemoryArena *persistent_arena;
+    MemoryArena *transient_arena;
+
+    // window size
+    i32 window_width;
+    i32 window_height;
+
+    i32 display_width;
+    i32 display_height;
+    
+    r32 dt;
+    u64 ticks;
+    
+} GameMemory;
+
+#define GAME_UPDATE_AND_RENDER(name) void name(GameMemory *memory)
+typedef GAME_UPDATE_AND_RENDER(GameUpdateAndRender);
+
+extern PlatformAPI *platform;
+extern GameUpdateAndRender gameUpdateAndRender;
+
+// Helpers that use platform api, can only be called once platform is set.
+#define INFO(format, ...) platform->platformLogMessage("[INFO] (%s:%d) " format "\n", \
+                                                       __FILE__, __LINE__, ##__VA_ARGS__)
+#ifdef __cplusplus
+}
 #endif
-
-#ifdef __APPLE__
-    #include <OpenGL/gl3.h>
-const char* library = "libgame.dylib";
-#endif // apple client
-
-#ifdef __linux__
-    #define GL_PROTOTYPES 1
-    #define GLEW_STATIC
-    #include <GL/glew.h>
-const char* library = "libgame.so";
-#endif // linux client
-
-#include "imgui_impl_sdl_gl3.cpp"
-
-#endif // client
-
-// Server stuff
-#ifdef GAME_SERVER
-
-#ifdef _WIN32
+    
 #endif
-
-#ifdef __APPLE__
-
-#endif // apple server
-
-#ifdef __linux__
-
-#endif // linux server
-#endif // server
-
-#endif // _game_platform_h
