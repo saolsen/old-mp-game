@@ -27,6 +27,8 @@ client: imgui
 	-I lib/imgui \
 	-I lib \
 	-L build/lib -limgui \
+	-I lib/enet-1.3.13/include \
+	-L lib/enet-1.3.13/.libs/ -lenet \
 	src/game_client.cpp -o ./build/client/osx/Game.app/Contents/MacOS/Game
 # Copy in files.
 	cp ./etc/Info.plist ./build/client/osx/Game.app/Contents/
@@ -40,6 +42,8 @@ server:
 # Build exe
 	clang++ ${CXXFLAGS} \
 	-F lib -framework SDL2 -framework SDL2_net \
+	-I lib/enet-1.3.13/include \
+	-L lib/enet-1.3.13/.libs/ -lenet \
 	src/game_server.cpp -o ./build/server/osx/game_server
 
 else
@@ -61,8 +65,10 @@ client: imgui
 	-I lib/imgui \
 	-I lib \
 	-L build/lib \
+	-I lib/enet-1.3.13/include \
+	-L lib/enet-1.3.13/.libs/ \
 	src/game_client.cpp -o ./build/client/linux/Game \
-	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -limgui
+	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -limgui -lenet
 	cp -r ./data/* ./build/client/linux/
 
 server:
@@ -71,8 +77,10 @@ server:
 # Build exe
 	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
+	-I lib/enet-1.3.13/include \
 	src/game_server.cpp -o ./build/server/linux/game_server \
-	`sdl2-config --libs` -lSDL2_net
+	`sdl2-config --libs` -lSDL2_net \
+	-L lib/enet-1.3.13/.libs/ -lenet
 
 endif
 
