@@ -1,5 +1,4 @@
 // Gotta do some extern c shit to get this to reload.
-
 // @TODO: Still wanna make the chat a circular buffer to be safe.
 
 #include "game.h"

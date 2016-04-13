@@ -4,7 +4,6 @@
 
 // I really wanna call this game_platform.h, can call that game_dependencies.h
 #ifndef _game_h
-#define _game_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -96,8 +95,13 @@ extern GameUpdateAndRender gameUpdateAndRender;
 // Helpers that use platform api, can only be called once platform is set.
 #define INFO(format, ...) platform->platformLogMessage("[INFO] (%s:%d) " format "\n", \
                                                        __FILE__, __LINE__, ##__VA_ARGS__)
+
+// Shared helper macros.
+#define LEN(e) (sizeof(e) / sizeof(e[0]))
+    
 #ifdef __cplusplus
 }
 #endif
-    
+
+#define _game_h
 #endif
