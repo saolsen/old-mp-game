@@ -2,6 +2,10 @@
 
 #include "game.h"
 
+const i32 input_buf_size = 256;
+const i32 text_buf_size = 1024;
+const i32 chat_msgs_count = 256;
+
 struct ChatMsg {
     char* msg;
     int   length;

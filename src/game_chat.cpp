@@ -4,10 +4,6 @@
 void
 chatStateAllocate(MemoryArena *arena, ChatState *chatstate)
 {
-    const i32 input_buf_size = 256;
-    const i32 text_buf_size = 1024;
-    const i32 chat_msgs_count = 256;
-
     chatstate->chat_input_buf = arenaPushArray(arena, char, input_buf_size);
     chatstate->chat_input_buf_max_count = input_buf_size;
         

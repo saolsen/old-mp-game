@@ -3,7 +3,7 @@
 
  */
 
-#include "game_system.h"
+#include "game_platform.h"
 #include "imgui.h"
 
 #include "game_chat.h"
