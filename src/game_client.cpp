@@ -95,36 +95,66 @@ int main()
         exit(1);
     }
 
-    if (SDLNet_Init() == -1) {
-        fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
-        exit(2);
+    // if (SDLNet_Init() == -1) {
+    //     fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
+    //     exit(2);
+    // }
+
+    // UDPsocket udpsock = SDLNet_UDP_Open(0);
+    // if (!udpsock) {
+    //     fprintf(stderr, "SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+    //     exit(2);
+    // }
+
+    // // Ping the server.
+    // // I don't really like that you have to call this to allocate packets. I'd rather do the memory management myself. I had that system with an arena that was working very nicely. That way I don't have to resize.
+    // const char *data = "Hello I am the client";
+    // int len = strlen(data) + 1;
+    // UDPpacket *packet = SDLNet_AllocPacket(len);
+    // if (!packet) {
+    //     fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
+    // }
+
+    // memcpy(packet->data, data, len);
+    // packet->len = len;
+
+    // IPaddress address;
+    // SDLNet_ResolveHost(&address, SERVER_HOST, 1234);
+    // packet->address.host = address.host;
+    // packet->address.port = address.port;
+
+    // SDLNet_UDP_Send(udpsock, -1, packet);
+    // SDLNet_FreePacket(packet);
+
+    // Set Up Enet
+    if (enet_initialize() != 0) {
+        fprintf(stderr, "An error occurred while initializing ENet.\n");
+        exit(1);
     }
 
-    UDPsocket udpsock = SDLNet_UDP_Open(0);
-    if (!udpsock) {
-        fprintf(stderr, "SDLNet_UDP_Open: %s\n", SDLNet_GetError());
-        exit(2);
+    ENetHost *client;
+    client = enet_host_create(NULL,
+                              1,
+                              4,
+                              57600 / 8, // from tutorial, this is like a 56k modem bandwidth.
+                              14400 / 8);
+
+    if (client == NULL) {
+        fprintf(stderr, "Error occured while trying to create an ENet client host.\n");
     }
 
-    // Ping the server.
-    // I don't really like that you have to call this to allocate packets. I'd rather do the memory management myself. I had that system with an arena that was working very nicely. That way I don't have to resize.
-    const char *data = "Hello I am the client";
-    int len = strlen(data) + 1;
-    UDPpacket *packet = SDLNet_AllocPacket(len);
-    if (!packet) {
-        fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
+    ENetAddress address;
+    ENetPeer *peer;
+
+    enet_address_set_host(&address, SERVER_HOST);
+    address.port = 1234;
+
+    peer = enet_host_connect(client, &address, 4, 0);
+
+    if (peer == NULL) {
+        fprintf(stderr, "Error, no available peers for initiating an ENet connection.\n");
+        exit(1);
     }
-
-    memcpy(packet->data, data, len);
-    packet->len = len;
-
-    IPaddress address;
-    SDLNet_ResolveHost(&address, SERVER_HOST, 1234);
-    packet->address.host = address.host;
-    packet->address.port = address.port;
-
-    SDLNet_UDP_Send(udpsock, -1, packet);
-    SDLNet_FreePacket(packet);
 
     // Set up normal sdl stuff.
     if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -222,6 +252,17 @@ int main()
             case SDL_QUIT:
                 running = 0;
                 break;
+            default:
+                break;
+            }
+        }
+
+        ENetEvent net_event;
+        while (enet_host_service(client, &net_event, 0) > 0) {
+            switch (net_event.type) {
+            case ENET_EVENT_TYPE_CONNECT: {
+                fprintf(stderr, "Connected!\n");
+            } break;
             default:
                 break;
             }

@@ -6,6 +6,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 
+#include "enet/enet.h"
+
 // @TODO: Use sdl version of stat, not sure if there even is one tho, maybe this is just a dev
 // feature.
 #include <sys/stat.h>
