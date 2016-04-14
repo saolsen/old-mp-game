@@ -66,8 +66,8 @@ client: imgui
 	-I lib \
 	-L build/lib \
 	-I lib/enet-1.3.13/include \
-	lib/enet-1.3.13/.libs/libenet.a \
 	src/game_client.cpp -o ./build/client/linux/Game \
+	lib/enet-1.3.13/.libs/libenet.a \
 	`sdl2-config --libs` -lSDL2_net -lGL -lGLEW -limgui
 	cp -r ./data/* ./build/client/linux/
 
