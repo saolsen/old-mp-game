@@ -54,13 +54,13 @@ client: imgui
 # Make directory.
 	mkdir -p ./build/client/linux
 # Build dylib
-	clang++ ${CXXFLAGS} \
+	c++ ${CXXFLAGS} \
 	-I lib/imgui \
 	-fPIC -shared \
 	-o ./build/client/linux/libgame.so \
 	src/game.cpp
 # Build exe
-	clang++ ${CXXFLAGS} \
+	c++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
 	-I lib/imgui \
 	-I lib \
@@ -75,7 +75,7 @@ server:
 # Make directory.
 	mkdir -p ./build/server/linux
 # Build exe
-	clang++ ${CXXFLAGS} \
+	c++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
 	-I lib/enet-1.3.13/include \
 	lib/enet-1.3.13/.libs/libenet.a \
@@ -87,7 +87,7 @@ endif
 
 imgui:
 	mkdir -p ./build/lib
-	cd build/lib ; clang++ -c ../../lib/imgui/imgui_draw.cpp ../../lib/imgui/imgui.cpp
+	cd build/lib ; c++ -c ../../lib/imgui/imgui_draw.cpp ../../lib/imgui/imgui.cpp
 	ar rcs build/lib/libimgui.a build/lib/imgui_draw.o build/lib/imgui.o
 
 # The site is hosted with Caddy. Right now it's hella simple.
