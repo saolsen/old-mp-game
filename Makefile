@@ -78,8 +78,8 @@ server:
 	clang++ ${CXXFLAGS} \
 	`sdl2-config --cflags` \
 	-I lib/enet-1.3.13/include \
-	lib/enet-1.3.13/.libs/libenet.a \
 	src/game_server.cpp -o ./build/server/linux/game_server \
+	lib/enet-1.3.13/.libs/libenet.a \
 	`sdl2-config --libs` -lSDL2_net \
 	-L lib/enet-1.3.13/.libs/
 
