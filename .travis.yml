@@ -10,9 +10,9 @@ matrix:
     compiler: clang
 before_install:
 - git submodule update --init
-- cd lib && tar -xvzf enet-1.3.13.tar.gz && cd enet-1.3.13 && ./configure && make && cd ../..
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq  ; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq build-essential libsdl2-dev libsdl2-net-dev libglew-dev; fi
+- cd lib && tar -xvzf enet-1.3.13.tar.gz && cd enet-1.3.13 && ./configure && make && cd ../..
 install: true
 script: make client SERVER_HOST=PROD_HOST && make server SERVER_HOST=PROD_HOST && make site
 before_deploy:
