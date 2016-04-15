@@ -2,7 +2,7 @@
 #include "imgui.h"
 
 void
-chatStateAllocate(MemoryArena *arena, ChatState *chatstate)
+chatStateAllocate(MemoryArena *arena, ChatState *chatstate, i32 my_id)
 {
     chatstate->chat_input_buf = arenaPushArray(arena, char, input_buf_size);
     chatstate->chat_input_buf_capacity = input_buf_size;
@@ -24,6 +24,8 @@ chatStateAllocate(MemoryArena *arena, ChatState *chatstate)
     // chatstate->chat_msgs_next_msg = 0;
 
     chatstate->scroll_to_bottom = false;
+
+    chatstate->my_id = my_id;
 }
 
 inline void
@@ -119,12 +121,18 @@ chatDisplay(ChatState *chatstate, int display_height)
 
         ChatMsg *msg = chatstate->chat_msgs + message_index;
 
-        if (message_index % 2 == 0) {
-            ImGui::TextColored(ImVec4(1.0f,1.0f,0.0f,1.0f), "Steve");
-
+        if (msg->user_id == chatstate->my_id) {
+            ImGui::TextColored(ImVec4(1.0f,1.0f,0.0f,1.0f), "Me");
         } else {
-            ImGui::TextColored(ImVec4(1.0f,1.0f,0.0f,1.0f), "Somebody Else");
+            ImGui::TextColored(ImVec4(1.0f,1.0f,0.0f,1.0f), "uid: %i", msg->user_id);
         }
+
+        // if (message_index % 2 == 0) {
+        //     ImGui::TextColored(ImVec4(1.0f,1.0f,0.0f,1.0f), "Steve");
+
+        // } else {
+        //     ImGui::TextColored(ImVec4(1.0f,1.0f,0.0f,1.0f), "Somebody Else");
+        // }
 
         // Kinda crappy but might be fine.
         char text_buf[input_buf_size+1];
@@ -166,7 +174,13 @@ chatDisplay(ChatState *chatstate, int display_height)
 
     ImGui::SameLine();
     if (ImGui::Button("Send") || add_msg) {
-        chatAddMessage(chatstate, chatstate->chat_input_buf, strlen(chatstate->chat_input_buf), 0);
+        chatAddMessage(chatstate, chatstate->chat_input_buf, strlen(chatstate->chat_input_buf), chatstate->my_id);
+
+        // Send packet.
+        PacketChatMsg chat_msg;
+        packetChatMsgInit(&chat_msg);
+        snprintf(chat_msg.msg, LEN(chat_msg.msg), "%s", chatstate->chat_input_buf);
+        platform->platformSendPacket((PacketHeader*)&chat_msg);
 
         // Clear input buffer.
         for (int i=0; i<chatstate->chat_input_buf_capacity; i++) {

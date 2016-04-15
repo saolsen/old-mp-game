@@ -75,6 +75,35 @@ PLATFORM_LOG_MESSAGE(platformLogMessage)
     va_end(args);
 }
 
+ENetPeer *enet_peer;
+
+PLATFORM_SEND_PACKET(platformSendPacket)
+{
+    //PacketHeader *packet;
+    u32 enet_flag;
+    i32 channel; // @TODO: decide this.
+    switch(packet->flag) {
+    case PacketFlag_RELIABLE:
+        enet_flag = ENET_PACKET_FLAG_RELIABLE;
+        channel = 1;
+        break;
+    case PacketFlag_ORDERED:
+        enet_flag = 0;
+        channel = 1;
+        break;
+    case PacketFlag_UNORDERED:
+        enet_flag = ENET_PACKET_FLAG_UNSEQUENCED;
+        channel = 1;
+        break;
+    }
+    
+    ENetPacket *enet_packet = enet_packet_create(packet,
+                                                 packet->size,
+                                                 enet_flag);
+    enet_peer_send(enet_peer, channel, enet_packet);
+}
+
+
 int main()
 {
     CurrentGame game = {.handle = NULL,
@@ -88,7 +117,8 @@ int main()
     // add_chat_msg(msg2, strlen(msg2));
     
     PlatformAPI platform_api;
-    platform_api.platformLogMessage = &platformLogMessage;
+    platform_api.platformLogMessage = platformLogMessage;
+    platform_api.platformSendPacket = platformSendPacket;
 
     if (SDL_Init(0) == -1) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
@@ -144,14 +174,13 @@ int main()
     }
 
     ENetAddress address;
-    ENetPeer *peer;
 
     enet_address_set_host(&address, SERVER_HOST);
     address.port = 1234;
 
-    peer = enet_host_connect(client, &address, 4, 0);
+    enet_peer = enet_host_connect(client, &address, 4, 0);
 
-    if (peer == NULL) {
+    if (enet_peer == NULL) {
         fprintf(stderr, "Error, no available peers for initiating an ENet connection.\n");
         exit(1);
     }
@@ -235,6 +264,9 @@ int main()
 
     uint64_t last_counter = SDL_GetPerformanceCounter();
     int last_start_time = SDL_GetTicks();
+
+    ENetPacket *packets[256];
+    int num_packets;
  
     int running = 1;
     while (running) {
@@ -257,11 +289,25 @@ int main()
             }
         }
 
+        memory->num_packets = 0;
+        num_packets = 0;
         ENetEvent net_event;
-        while (enet_host_service(client, &net_event, 0) > 0) {
+        while (num_packets < 256 && enet_host_service(client, &net_event, 0) > 0) {
             switch (net_event.type) {
             case ENET_EVENT_TYPE_CONNECT: {
                 fprintf(stderr, "Connected!\n");
+            } break;
+
+            case ENET_EVENT_TYPE_RECEIVE: {
+                // @NOTE: Packets are only valid for the frame they come in on. If you want them
+                // longer you better copy them.
+                if (net_event.channelID > 0) {
+                    ENetPacket **enet_packet = packets + num_packets++;
+                    *enet_packet = net_event.packet;
+                    
+                    PacketHeader **packet = memory->packets + memory->num_packets++;
+                    *packet = (PacketHeader*)net_event.packet->data;
+                }
             } break;
             default:
                 break;
@@ -274,7 +320,7 @@ int main()
 
         ImGui_ImplSdlGL3_NewFrame(window);
 
-        ImGui::ShowTestWindow();
+        // ImGui::ShowTestWindow();
         // Look at the console example for doing a chat widget.
         // Put chat in the lower left, no resize, no border no menu etc...
 
@@ -310,6 +356,11 @@ int main()
         memory->display_height = display_h;
 
         game.gameUpdateAndRender(memory);
+
+        // Free packets from last frame.
+        for (int packet_index = 0; packet_index < num_packets; packet_index++) {
+            enet_packet_destroy(packets[packet_index]);
+        }
 
         glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
         ImGui::Render();

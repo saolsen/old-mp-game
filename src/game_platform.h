@@ -1,9 +1,8 @@
 // Non platform stuff for everybody to use. Also defines the interface between the platform layer
 // and the game layer.
 
-
-// I really wanna call this game_platform.h, can call that game_dependencies.h
-#ifndef _game_h
+#ifndef _game_platform_h
+#define _game_platform_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,14 +24,31 @@ typedef uint64_t u64;
 typedef float    r32;
 typedef double   r64;
 
+typedef enum {
+    PacketFlag_RELIABLE,  // will be returned in the order they are sent.
+    PacketFlag_ORDERED,   // will always get back the most recent one but may miss packets.
+    PacketFlag_UNORDERED, // raw udp, maybe you get it maybe you don't.
+} PacketFlag;
+
+typedef struct {
+    PacketFlag flag;
+    i32 size;       // Size includes this header.
+    i32 type;       // User defined type, so that you can cast this header to your packet type.
+} PacketHeader;
+
 // Platform specific api.
-// I think I can do the define thing here to make it easy to then later make this function in the
-// platform code.
 #define PLATFORM_LOG_MESSAGE(name) void name(const char* format, ...)
 typedef PLATFORM_LOG_MESSAGE(PlatformLogMessage);
 
+// Packet must start with a packet header and then have the rest of the data packed after it.
+// Probably that means a struct with PacketHeader as the first element.
+// size bytes will be sent over the wire as the packet data with the packet flags.
+#define PLATFORM_SEND_PACKET(name) void name(PacketHeader* packet)
+typedef PLATFORM_SEND_PACKET(PlatformSendPacket);
+
 typedef struct {
     PlatformLogMessage *platformLogMessage;
+    PlatformSendPacket *platformSendPacket;
 } PlatformAPI;
 
 typedef struct {
@@ -48,19 +64,14 @@ arenaAllocate(MemoryArena* arena, u8* memory, i64 size)
     arena->size = 0;
     arena->max_size = size;
 }
-
-#include <stdio.h>
     
 u8*
 arenaPushSize(MemoryArena *arena, i64 size)
 {
-    printf("ArenaPushing: %lli, ", size);
     assert(arena->size + size < arena->max_size);
 
     u8 *result = arena->base + arena->size; // @TODO: Align
     arena->size += size;
-
-    printf("ArenaSpaceRemaining: %lli\n", arena->max_size - arena->size);
     
     return result;
 }
@@ -83,7 +94,11 @@ typedef struct {
     
     r32 dt;
     u64 ticks;
-    
+
+    // @TODO: Controller Input
+
+    PacketHeader* packets[256];
+    i32 num_packets;
 } GameMemory;
 
 #define GAME_UPDATE_AND_RENDER(name) void name(GameMemory *memory)
@@ -103,5 +118,4 @@ extern GameUpdateAndRender gameUpdateAndRender;
 }
 #endif
 
-#define _game_h
 #endif

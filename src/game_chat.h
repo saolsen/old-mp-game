@@ -1,4 +1,5 @@
 #ifndef _game_chat_h
+#define _game_chat_h
 
 #include "game.h"
 
@@ -34,7 +35,7 @@ struct ChatState {
     /* i32 chat_msgs_next_msg; */
 
     bool scroll_to_bottom;
+    i32 my_id;
 };
 
-#define _game_chat_h
 #endif
